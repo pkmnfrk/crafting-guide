@@ -144,7 +144,7 @@ module.exports = class ModPack extends BaseModel
         options.alwaysFromOwningMod ?= false
         return null unless itemSlug?
 
-        key = "#{itemSlug}-#{options.alwaysFromOwningMod}"
+        key = "#{itemSlug}-#{options.alwaysFromOwningMod}-#{options.mode}"
         @_cache.recipesBySlug ?= {}
         result = @_cache.recipesBySlug[key]
         return result if result?

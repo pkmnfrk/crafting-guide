@@ -127,11 +127,13 @@ module.exports = class ModVersionParserV1 extends CommandParserVersionBase
         @_recipeData.quantity = quantity
         @_recipeData.output[0].quantity = parseInt quantity
 
-    _command_recipe: ->
+    _command_recipe: (mode='normal')->
         if not @_itemData? then throw new Error 'cannot delcare "recipe" before "item"'
-
+        if not mode? then throw new Error 'mode cannot be blank'
+        if mode == 'expert' then logger.error 'Expert!'
+        
         @_multiblockData = null
-        @_recipeData = line:@_lineNumber, input:[], output:[{quantity:1, name:@_itemData.name}], tools:[]
+        @_recipeData = line:@_lineNumber, input:[], output:[{quantity:1, name:@_itemData.name}], tools:[], mode: mode
         @_itemData.recipes ?= []
         @_itemData.recipes.push @_recipeData
 
@@ -176,7 +178,7 @@ module.exports = class ModVersionParserV1 extends CommandParserVersionBase
         @_lineNumber = itemData.line
         itemData.gatherable           ?= false
         itemData.ignoreDuringCrafting ?= false
-        itemData.recipes              ?= []
+        itemData.recipes              ?= {}
 
         if itemData.type is 'new'
             item = new Item
@@ -213,6 +215,7 @@ module.exports = class ModVersionParserV1 extends CommandParserVersionBase
         if not recipeData.pattern? then throw new Error 'the "pattern" declaration is required'
 
         recipe = new Recipe
+            mode:                 recipeData.mode
             condition:            recipeData.condition
             ignoreDuringCrafting: recipeData.ignoreDuringCrafting
             input:                @_buildStackList modVersion, recipeData.input, recipeData.pattern
@@ -220,7 +223,7 @@ module.exports = class ModVersionParserV1 extends CommandParserVersionBase
             pattern:              recipeData.pattern
             tools:                @_buildStackList modVersion, recipeData.tools
 
-        modVersion.addRecipe recipe
+        modVersion.addRecipe recipe, recipeData.mode
         return recipe
 
     _buildStackList: (modVersion, data, pattern=null)->

@@ -33,6 +33,7 @@ module.exports = class Recipe extends BaseModel
         attributes.ignoreDuringCrafting ?= false
         attributes.modVersion           ?= null
         attributes.tools                ?= []
+        attributes.mode                 ?= 'normal'
         options.logEvents               ?= false
         super attributes, options
 

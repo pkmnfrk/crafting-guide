@@ -122,17 +122,18 @@ module.exports = class ModVersion extends BaseModel
 
     # Recipe Methods ###############################################################################
 
-    addRecipe: (recipe)->
+    addRecipe: (recipe,mode='normal')->
         return unless recipe?
-
+        @_recipes[mode] ?= {}
+        
         recipe.modVersion = this
-        if @_recipes[recipe.slug]? then throw new Error "duplicate recipe: #{recipe.slug}"
+        if @_recipes[mode][recipe.slug]? then throw new Error "duplicate recipe: #{recipe.slug}"
 
-        @_recipes[recipe.slug] = recipe
+        @_recipes[mode][recipe.slug] = recipe
         return this
 
-    eachRecipe: (callback)->
-        recipes = _.values(@_recipes).sort (a, b)-> Recipe.compareFor a, b
+    eachRecipe: (callback,mode='normal')->
+        recipes = _.values(@_recipes[mode]).sort (a, b)-> Recipe.compareFor a, b
         for recipe in recipes
             callback recipe
         return this
@@ -140,20 +141,27 @@ module.exports = class ModVersion extends BaseModel
     findRecipes: (itemSlug, result=[], options={})->
         options.onlyPrimary ?= false
         options.forCrafting ?= false
-
+        options.mode ?= "expert"
+        
         primaryRecipes = []
         otherRecipes = []
 
-        for recipe in _.values @_recipes
-            continue unless recipe.isConditionSatisfied()
-            continue unless recipe.hasAllTools()
-            continue if options.forCrafting and recipe.ignoreDuringCrafting
+        if @_recipes[options.mode]
+            for recipe in _.values @_recipes[options.mode]
+                continue unless recipe.isConditionSatisfied()
+                continue unless recipe.hasAllTools()
+                continue if options.forCrafting and recipe.ignoreDuringCrafting
+                continue if options.mode != recipe.mode
 
-            if recipe.itemSlug.matches itemSlug
-                primaryRecipes.push recipe
-            else if recipe.produces itemSlug
-                otherRecipes.push recipe
+                if recipe.itemSlug.matches itemSlug
+                    primaryRecipes.push recipe
+                else if recipe.produces itemSlug
+                    otherRecipes.push recipe
 
+        if options.mode != 'normal' && primaryRecipes.length == 0
+            #try normal mode for a recipe
+            return this.findRecipes itemSlug, result, forCrafting:options.forCrafting, onlyPrimary:options.onlyPrimary, mode:"normal"
+        
         for recipe in primaryRecipes
             result.push recipe
 
@@ -163,9 +171,9 @@ module.exports = class ModVersion extends BaseModel
 
         return result
 
-    findExternalRecipes: ->
+    findExternalRecipes: (mode='normal')->
         result = {}
-        for k, recipe of @_recipes
+        for k, recipe of @_recipes[mode]
             continue if recipe.itemSlug.isQualified
 
             recipeList = result[recipe.itemSlug]
@@ -175,8 +183,8 @@ module.exports = class ModVersion extends BaseModel
 
         return result
 
-    hasRecipes: (itemSlug)->
-        for k, recipe of @_recipes
+    hasRecipes: (itemSlug, mode='normal')->
+        for k, recipe of @_recipes[mode]
             return true if recipe.produces itemSlug
         return false
 
