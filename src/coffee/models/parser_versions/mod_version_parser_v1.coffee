@@ -294,7 +294,7 @@ module.exports = class ModVersionParserV1 extends CommandParserVersionBase
             builder.outdent()
 
     _unparseItem: (builder, modVersion, item)->
-        recipes = modVersion.findRecipes item.slug, [], onlyPrimary:true
+        recipes = modVersion.findRecipes item.slug, [], onlyPrimary:true, mode:'*'
 
         builder
             .line 'item: ', item.name
@@ -350,7 +350,7 @@ module.exports = class ModVersionParserV1 extends CommandParserVersionBase
         extraOutputs.shift()
 
         builder
-            .line 'recipe:'
+            .line 'recipe:', if recipe.mode != 'normal' then ' ' + recipe.mode else ''
             .indent()
                 .onlyIf recipe.condition?, =>
                     builder.push 'onlyIf: '
