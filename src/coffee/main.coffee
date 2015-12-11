@@ -64,6 +64,8 @@ global.router = new CraftingGuideRouter client:client
 global.router.loadCurrentUser()
 global.router.loadDefaultModPack()
 
+global.mode = if window.localStorage.mode then window.localStorage.mode else 'expert'
+
 backbone.history.start pushState:true
 client.checkStatus()
 

@@ -28,9 +28,9 @@ module.exports = class ItemNode extends CraftingNode
 
     getRecipes: ->
         if not @_recipes?
-            @_recipes = @modPack.findRecipes @item.slug, forCrafting:true, onlyPrimary:true
+            @_recipes = @modPack.findRecipes @item.slug, forCrafting:true, onlyPrimary:true, mode: global.mode
             if not @_recipes
-                @_recipes = @modPack.findRecipes @item.slug, forCrafting:true
+                @_recipes = @modPack.findRecipes @item.slug, forCrafting:true, mode: global.mode
 
         return @_recipes or []
 

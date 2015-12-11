@@ -133,6 +133,9 @@ module.exports = class ModVersion extends BaseModel
         return this
 
     eachRecipe: (callback,mode='normal')->
+        if mode != 'normal' && not @_recipes[mode]
+            mode = 'normal'
+        
         recipes = _.values(@_recipes[mode]).sort (a, b)-> Recipe.compareFor a, b
         for recipe in recipes
             callback recipe
@@ -141,7 +144,7 @@ module.exports = class ModVersion extends BaseModel
     findRecipes: (itemSlug, result=[], options={})->
         options.onlyPrimary ?= false
         options.forCrafting ?= false
-        options.mode ?= "expert"
+        options.mode        ?= global.mode
         
         primaryRecipes = []
         otherRecipes = []
